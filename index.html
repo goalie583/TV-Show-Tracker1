@@ -93,7 +93,7 @@
             if (!query) return showToast("Please type a show name");
 
             const resultsDiv = document.getElementById('search-results');
-            resultsDiv.innerHTML = "<p class='text-gray-400'>Searching TVMaze...</p>";
+            resultsDiv.innerHTML = "<p>Searching TVMaze...</p>";
 
             try {
                 const res = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
@@ -170,4 +170,5 @@
         switchTab(0);
     </script>
 </body>
+</html>
 </html>
