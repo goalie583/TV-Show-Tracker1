@@ -41,6 +41,7 @@
             <input id="search-input" type="text" placeholder="The Bear, House of the Dragon..." 
                    class="w-full p-5 bg-zinc-900 border border-white/20 rounded-3xl text-lg"
                    onkeydown="if(event.key==='Enter') searchShows()">
+            <button onclick="searchShows()" class="mt-4 bg-cyan-400 text-black px-8 py-3 rounded-3xl font-medium">Search</button>
             <div id="search-results" class="mt-8 space-y-4"></div>
         </div>
 
@@ -93,7 +94,7 @@
             if (!query) return showToast("Please type a show name");
 
             const resultsDiv = document.getElementById('search-results');
-            resultsDiv.innerHTML = "<p>Searching TVMaze...</p>";
+            resultsDiv.innerHTML = "<p class='text-gray-400'>Searching TVMaze...</p>";
 
             try {
                 const res = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
@@ -170,5 +171,4 @@
         switchTab(0);
     </script>
 </body>
-</html>
 </html>
