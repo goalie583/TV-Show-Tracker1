@@ -136,21 +136,32 @@
             if (watchlist.some(s => s.id === id)) return showToast("Already in watchlist");
 
             let nextEpisode = null;
+            let lastAired = null;
             try {
                 const epsRes = await fetch(`https://api.tvmaze.com/shows/${id}/episodes`);
                 const episodes = await epsRes.json();
                 const now = Date.now();
+
+                // Find next upcoming
                 nextEpisode = episodes
                     .filter(e => e.airstamp && new Date(e.airstamp) > now)
                     .sort((a, b) => new Date(a.airstamp) - new Date(b.airstamp))[0];
+
+                // Find last aired if no upcoming
+                if (!nextEpisode) {
+                    lastAired = episodes
+                        .filter(e => e.airstamp && new Date(e.airstamp) <= now)
+                        .sort((a, b) => new Date(b.airstamp) - new Date(a.airstamp))[0];
+                }
             } catch (e) {
-                console.log("Could not load next episode for", name);
+                console.log("Could not load episode data for", name);
             }
 
             watchlist.push({ 
                 id, 
                 name, 
                 nextEpisode,
+                lastAired,
                 lastChecked: Date.now()
             });
 
@@ -171,18 +182,22 @@
             empty.classList.add('hidden');
 
             watchlist.forEach((show, i) => {
-                let nextText = "No upcoming episode announced";
+                let episodeText = "No upcoming episode announced";
                 if (show.nextEpisode) {
                     const date = new Date(show.nextEpisode.airstamp);
-                    nextText = `Next: S${show.nextEpisode.season}E${show.nextEpisode.number} — ${date.toLocaleDateString('en-US', {month:'short', day:'numeric'})}`;
+                    episodeText = `Next: S${show.nextEpisode.season}E${show.nextEpisode.number} — ${date.toLocaleDateString('en-US', {month:'short', day:'numeric'})}`;
+                } else if (show.lastAired) {
+                    const date = new Date(show.lastAired.airstamp);
+                    episodeText = `Last aired: S${show.lastAired.season}E${show.lastAired.number} — ${date.toLocaleDateString('en-US', {month:'short', day:'numeric'})}`;
                 }
+
                 const div = document.createElement('div');
                 div.className = "card bg-zinc-900 p-8 rounded-3xl border border-white/10";
                 div.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="font-semibold text-xl">${show.name}</div>
-                            <div class="text-sm text-cyan-400 mt-4">${nextText}</div>
+                            <div class="text-sm text-cyan-400 mt-4">${episodeText}</div>
                         </div>
                         <button onclick="removeShow(${i})" class="text-red-400 hover:text-red-500">Remove</button>
                     </div>
@@ -207,9 +222,16 @@
                     const epsRes = await fetch(`https://api.tvmaze.com/shows/${show.id}/episodes`);
                     const episodes = await epsRes.json();
                     const now = Date.now();
+
                     show.nextEpisode = episodes
                         .filter(e => e.airstamp && new Date(e.airstamp) > now)
                         .sort((a, b) => new Date(a.airstamp) - new Date(b.airstamp))[0];
+
+                    if (!show.nextEpisode) {
+                        show.lastAired = episodes
+                            .filter(e => e.airstamp && new Date(e.airstamp) <= now)
+                            .sort((a, b) => new Date(b.airstamp) - new Date(a.airstamp))[0];
+                    }
                 } catch (e) {}
             }
             renderWatchlist();
