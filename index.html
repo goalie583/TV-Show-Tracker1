@@ -135,7 +135,6 @@
         async function addToWatchlist(id, name) {
             if (watchlist.some(s => s.id === id)) return showToast("Already in watchlist");
 
-            // Fetch next episode immediately
             let nextEpisode = null;
             try {
                 const epsRes = await fetch(`https://api.tvmaze.com/shows/${id}/episodes`);
@@ -145,7 +144,7 @@
                     .filter(e => e.airstamp && new Date(e.airstamp) > now)
                     .sort((a, b) => new Date(a.airstamp) - new Date(b.airstamp))[0];
             } catch (e) {
-                console.log("Could not fetch next episode");
+                console.log("Could not load next episode for", name);
             }
 
             watchlist.push({ 
@@ -172,18 +171,18 @@
             empty.classList.add('hidden');
 
             watchlist.forEach((show, i) => {
-                const div = document.createElement('div');
-                div.className = "card bg-zinc-900 p-8 rounded-3xl border border-white/10";
                 let nextText = "No upcoming episode announced";
                 if (show.nextEpisode) {
                     const date = new Date(show.nextEpisode.airstamp);
-                    nextText = `Next: S${show.nextEpisode.season}E${show.nextEpisode.number} — ${date.toLocaleDateString()}`;
+                    nextText = `Next: S${show.nextEpisode.season}E${show.nextEpisode.number} — ${date.toLocaleDateString('en-US', {month:'short', day:'numeric'})}`;
                 }
+                const div = document.createElement('div');
+                div.className = "card bg-zinc-900 p-8 rounded-3xl border border-white/10";
                 div.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="font-semibold text-xl">${show.name}</div>
-                            <div class="text-sm text-cyan-400 mt-3">${nextText}</div>
+                            <div class="text-sm text-cyan-400 mt-4">${nextText}</div>
                         </div>
                         <button onclick="removeShow(${i})" class="text-red-400 hover:text-red-500">Remove</button>
                     </div>
@@ -197,18 +196,28 @@
             renderWatchlist();
         }
 
-        function checkForNewContent() {
+        async function checkForNewContent() {
             if (watchlist.length === 0) {
                 return showToast("Add some shows to your watchlist first");
             }
-            showToast("✅ Checking for new episodes...\n\nNext episode info will be updated (on real iOS this would also schedule reminders).");
-            // In a full version this would refresh nextEpisode for each show
+            showToast("✅ Checking for new episodes...");
+
+            for (let show of watchlist) {
+                try {
+                    const epsRes = await fetch(`https://api.tvmaze.com/shows/${show.id}/episodes`);
+                    const episodes = await epsRes.json();
+                    const now = Date.now();
+                    show.nextEpisode = episodes
+                        .filter(e => e.airstamp && new Date(e.airstamp) > now)
+                        .sort((a, b) => new Date(a.airstamp) - new Date(b.airstamp))[0];
+                } catch (e) {}
+            }
+            renderWatchlist();
+            showToast("Watchlist updated with latest episode info.");
         }
 
         // Start
         switchTab(0);
     </script>
-</body>
-</html>
 </body>
 </html>
