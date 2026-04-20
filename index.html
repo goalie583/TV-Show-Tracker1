@@ -9,34 +9,28 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
         body { font-family: 'Inter', system_ui, sans-serif; }
         .title-font { font-family: 'Space Grotesk', sans-serif; }
-        .card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 50px -12px rgb(103 232 249 / 0.25);
-        }
+        .card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card:hover { transform: translateY(-6px); }
     </style>
 </head>
-<body class="bg-zinc-950 text-white">
-    <div class="max-w-5xl mx-auto p-6">
-        <!-- Header -->
+<body class="bg-zinc-950 text-white p-6">
+    <div class="max-w-5xl mx-auto">
         <header class="flex justify-between items-center mb-12">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 rounded-3xl flex items-center justify-center text-6xl shadow-2xl">📺</div>
+                <div class="w-14 h-14 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-3xl flex items-center justify-center text-6xl shadow-xl">📺</div>
                 <div>
                     <h1 class="title-font text-5xl tracking-tighter">TV Pulse</h1>
-                    <p class="text-cyan-400 text-sm -mt-1">Never miss an episode again</p>
+                    <p class="text-cyan-400 text-sm">Track episodes & seasons</p>
                 </div>
             </div>
             <button onclick="checkForNewContent()" 
-                    class="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-zinc-950 font-semibold px-10 py-4 rounded-3xl transition-all active:scale-95 shadow-lg">
+                    class="bg-gradient-to-r from-cyan-400 to-blue-500 text-zinc-950 font-semibold px-10 py-4 rounded-3xl transition-all active:scale-95">
                 🔄 Check Now
             </button>
         </header>
 
         <!-- Tabs -->
-        <div class="flex bg-zinc-900/80 backdrop-blur p-1.5 rounded-3xl mb-12 w-fit shadow-inner">
+        <div class="flex gap-2 bg-zinc-900 p-1.5 rounded-3xl mb-12 w-fit shadow-inner">
             <button onclick="switchTab(0)" id="tab0" class="px-9 py-3.5 rounded-3xl data-[active=true]:bg-white data-[active=true]:text-zinc-950 font-medium transition-all">Watchlist</button>
             <button onclick="switchTab(1)" id="tab1" class="px-9 py-3.5 rounded-3xl data-[active=true]:bg-white data-[active=true]:text-zinc-950 font-medium transition-all">Search</button>
             <button onclick="switchTab(2)" id="tab2" class="px-9 py-3.5 rounded-3xl data-[active=true]:bg-white data-[active=true]:text-zinc-950 font-medium transition-all">Upcoming</button>
@@ -47,17 +41,17 @@
         <div id="content-0">
             <h2 class="text-3xl font-semibold mb-8">My Watchlist</h2>
             <div id="watchlist-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-            <p id="empty-watchlist" class="hidden text-center text-gray-400 py-20 text-lg">Your watchlist is empty.<br>Search for shows and add them below.</p>
+            <p id="empty-watchlist" class="hidden text-center text-gray-400 py-20 text-lg">Your watchlist is empty.<br>Search and add shows below.</p>
         </div>
 
         <!-- Search -->
         <div id="content-1" class="hidden">
             <h2 class="text-3xl font-semibold mb-8">Search TV Shows</h2>
             <div class="max-w-2xl">
-                <input id="search-input" type="text" placeholder="The Bear, House of the Dragon, Severance..." 
-                       class="w-full p-6 bg-zinc-900 border border-white/10 rounded-3xl text-lg focus:border-cyan-400 focus:outline-none transition-all"
+                <input id="search-input" type="text" placeholder="The Bear, House of the Dragon..." 
+                       class="w-full p-6 bg-zinc-900 border border-white/10 rounded-3xl text-lg focus:border-cyan-400 focus:outline-none"
                        onkeydown="if(event.key==='Enter') searchShows()">
-                <button onclick="searchShows()" class="mt-6 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black px-12 py-4 rounded-3xl font-semibold transition-all">Search Shows</button>
+                <button onclick="searchShows()" class="mt-6 bg-cyan-400 text-black px-12 py-4 rounded-3xl font-semibold">Search Shows</button>
             </div>
             <div id="search-results" class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </div>
@@ -73,7 +67,7 @@
             <h2 class="text-3xl font-semibold mb-8">Settings</h2>
             <div class="max-w-md bg-zinc-900 rounded-3xl p-10">
                 <h3 class="font-medium mb-8 text-xl">Reminder Timing</h3>
-                <div class="flex justify-between items-center mb-10">
+                <div class="flex justify-between mb-10">
                     <span class="text-lg">Enable reminders</span>
                     <input type="checkbox" id="reminder-toggle" checked class="w-12 h-7 accent-cyan-400">
                 </div>
@@ -120,11 +114,6 @@
                 const data = await res.json();
 
                 resultsDiv.innerHTML = '';
-                if (data.length === 0) {
-                    resultsDiv.innerHTML = "<p class='text-gray-400 text-center py-8'>No shows found.</p>";
-                    return;
-                }
-
                 data.forEach(item => {
                     const show = item.show;
                     const card = document.createElement('div');
@@ -146,7 +135,12 @@
 
         function addToWatchlist(id, name) {
             if (watchlist.some(s => s.id === id)) return showToast("Already in watchlist");
-            watchlist.push({ id, name });
+            watchlist.push({ 
+                id, 
+                name, 
+                nextEpisode: null,
+                lastChecked: Date.now()
+            });
             showToast(`✅ Added "${name}" to your watchlist`);
             renderWatchlist();
             switchTab(0);
@@ -165,10 +159,15 @@
 
             watchlist.forEach((show, i) => {
                 const div = document.createElement('div');
-                div.className = "card bg-zinc-900 p-8 rounded-3xl flex justify-between items-center border border-white/10";
+                div.className = "card bg-zinc-900 p-8 rounded-3xl border border-white/10";
                 div.innerHTML = `
-                    <span class="font-semibold text-xl">${show.name}</span>
-                    <button onclick="removeShow(${i})" class="text-red-400 hover:text-red-500 transition-colors">Remove</button>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-semibold text-xl">${show.name}</div>
+                            <div class="text-sm text-gray-400 mt-2">Next episode loading...</div>
+                        </div>
+                        <button onclick="removeShow(${i})" class="text-red-400 hover:text-red-500">Remove</button>
+                    </div>
                 `;
                 grid.appendChild(div);
             });
@@ -183,7 +182,8 @@
             if (watchlist.length === 0) {
                 return showToast("Add some shows to your watchlist first");
             }
-            showToast("✅ Check Now clicked!\n\nOn real iOS this would check for new episodes and schedule reminders.");
+            showToast("✅ Checking for new episodes...\n\nOn real iOS this would update your watchlist and schedule reminders.");
+            // In real version this would fetch latest episodes
         }
 
         // Start
